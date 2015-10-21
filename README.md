@@ -1,2 +1,0 @@
-# mclamee.github.io
-site
