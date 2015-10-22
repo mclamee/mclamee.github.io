@@ -1156,7 +1156,7 @@ input.menu-search-input {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #ff79cf;
+  background: #d02ff7;
 }
 .sidebar-nav {
   margin: 0;
@@ -2223,7 +2223,7 @@ ul li {
 }
 #donate_guide a {
   border: 0px;
-  padding-left: 8%;
+  margin-left: 8%;
   display: inline-block;
   _display: inline;
   *display: inline;
