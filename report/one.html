@@ -86,17 +86,13 @@
 			var tableData = $("#input").val().split("\n");
 			for(var ids in tableData){
 				var text = tableData[ids];
-				var first = true;
-				if(text != ""){
+				
+				if(text != undefined || text != null || text.trim() != ""){
 					var colArray = text.split("	");
 					var 月份 = ""+colArray[0];
 					
-					if(first){
-						first = false;
-						alert(月份);
-						if(月份 == "月份"){
-								continue;
-						}
+					if(月份 == "月份" || isNaN(月份)){
+							continue;
 					}
 
 					var 社区 = colArray[1];
