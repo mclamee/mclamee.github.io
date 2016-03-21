@@ -52,7 +52,7 @@
 			<input type="button" id="clickMe" class="btn btn-primary" style="margin-buttom: 20px;" value="计算" />
 			</div>
 		<div>
-			<div id="target"></div>
+				<div id="target"></div>
         </div>
         <div class="footer">
             <div class="pull-right">
@@ -77,7 +77,17 @@
     <script src="js/plugins/c3/c3.min.js"></script>
 
     <script>
-    	
+
+function addAll(arr1, $array)
+{
+ if($array == null || $array.length == 0)
+  return;
+ for(var $i in $array)
+  arr1.push($array[$i]);
+}
+
+    var cats = ["乐购", "旅游", "洗衣", "保洁", ];
+    
 		$("#clickMe").click(function(){
 			var data = {};
 			var targetPage = $("#target");
@@ -94,8 +104,8 @@
 					if(月份 == "月份" || isNaN(月份)){
 							continue;
 					}
-
 					var 社区 = colArray[1];
+					
 					var 乐购 = colArray[2];
 					var 旅游 = colArray[3];
 					var 洗衣 = colArray[4];
@@ -147,74 +157,52 @@
 		var i = 0;
 		for(var 社区名 in data){
 			var id = "XXX" + i++;
-			var htmlData = template.replace("{{title}}", 社区名).replace("{{id}}", id);
+			var htmlData = template.replace(/{{title}}/g, 社区名).replace(/{{id}}/g, id);
 			targetPage.append(htmlData);
 
 			var targetData = data[社区名];
 			var columns = [];
-
-			var newCategories = [];
-			
-			var lgDataLast = 0;
-			var lyDataLast = 0;
-			var xyDataLast = 0;
-			var bjDataLast = 0;
-			var firstMonth = true;
+		  var colInc = [];
+		  
+		  var lastMonthData = [];
 			for(var j = 1; j <= monthCategories.length; j++){
 				var eachMonthData = targetData[j+""];
-				var lgData = 0;
-				var lyData = 0;
-				var xyData = 0;
-				var bjData = 0;
-				if(!(eachMonthData == null || eachMonthData == undefined || eachMonthData == "")){
-					lgData = eachMonthData["乐购"];
-					lyData = eachMonthData["旅游"];
-					xyData = eachMonthData["洗衣"];
-					bjData = eachMonthData["保洁"];
+
+				if(eachMonthData == null || eachMonthData == undefined || eachMonthData == ""){
+					eachMonthData = [];
+					for(var k = 0; k < cats.length; k++){
+						eachMonthData[cats[k]] = 0;
+					}
 				}
 				
-				var cate = monthCategories[j-1];
-				newCategories[j-1] = cate;
-				if(firstMonth || lgDataLast == 0){
-					firstMonth = false;
-					newCategories[j-1] += "(+0.0%)";
-				}else{
-					var pers = ((lgData - lgDataLast)/lgDataLast * 100);
-					newCategories[j-1] += "("+ (pers >= 0?"+":"") + pers.toFixed(2) + "%"+")";
+				var ii = 0;
+				for(var l in eachMonthData){
+					var lastMonthNum = lastMonthData[l];
+					if(lastMonthNum == null || lastMonthNum == undefined || lastMonthNum == ""){
+						lastMonthNum = 0;
+					}
+					
+					var cateData = columns[ii];
+					var incData = colInc[ii];
+					if(cateData == null || cateData == undefined){
+					  cateData = [l, ];
+					  incData = [(l + "增长"), ];
+					  columns[ii] = cateData;
+					  colInc[ii] = incData;
+					}
+					var thisMonthNum = eachMonthData[l];
+					cateData.push(thisMonthNum);
+					
+					if(lastMonthNum == 0){
+						incData.push(0);
+					}else{
+						incData.push(((thisMonthNum - lastMonthNum)/lastMonthNum * 100).toFixed(2));
+					}
+					
+					lastMonthData[l] = thisMonthNum;
+					
+					ii++;
 				}
-
-			  lgDataLast = lgData;
-			  lyDataLast = lyData;
-			  xyDataLast = xyData;
-			  bjDataLast = bjData;
-
-				var 乐购 = columns[0];
-				if(乐购 == null || 乐购 == undefined){
-				  乐购 = ["乐购", ];
-				  columns[0] = 乐购;
-				}
-				乐购.push(lgData);
-				
-				var 旅游 = columns[1];
-				if(旅游 == null || 旅游 == undefined){
-				  旅游 = ["旅游", ];
-				  columns[1] = 旅游;
-				}
-				旅游.push(lyData);
-								
-				var 洗衣 = columns[2];
-				if(洗衣 == null || 洗衣 == undefined){
-				  洗衣 = ["洗衣", ];
-				  columns[2] = 洗衣;
-				}
-				洗衣.push(xyData);
-								
-				var 保洁 = columns[3];
-				if(保洁 == null || 保洁 == undefined){
-				  保洁 = ["保洁", ];
-				  columns[3] = 保洁;
-				}
-				保洁.push(bjData);
 			}
 
       c3.generate({
@@ -225,15 +213,46 @@
                 乐购: 'red',
                 旅游: 'blue',
 								洗衣: 'orange',
-								保洁: 'black'
-					  }
+								保洁: 'black',
+					  },
+					  type: 'line',
+					  labels: true
 				},
 				axis: {
 					x: {
 						type: 'category',
-						categories: newCategories
+						categories: monthCategories
 					}
 				}
+      });
+
+      c3.generate({
+        bindto: '#'+id+"-B",
+        data:{
+            columns: colInc,
+            colors:{
+								乐购增长: 'red',
+                旅游增长: 'blue',
+								洗衣增长: 'orange',
+								保洁增长: 'black'
+					  },
+					  type: 'area-spline',
+					  labels: true
+				},
+				axis: {
+					x: {
+						type: 'category',
+						categories: monthCategories
+					},
+					y: {
+						 format: d3.format('%')
+					}
+				},
+		    grid: {
+		        y: {
+		            lines: [{value:0}]
+		        }
+		    }
       });
 		}
 	}
@@ -243,11 +262,23 @@ var template = " \
 <div class=\"col-lg-6\"> \
     <div class=\"ibox float-e-margins\"> \
         <div class=\"ibox-title\"> \
-            <h5>{{title}}</h5> \
+            <h5>{{title}} 订单数</h5> \
         </div> \
         <div class=\"ibox-content\"> \
             <div> \
                 <div id=\"{{id}}\"></div> \
+            </div> \
+        </div> \
+    </div> \
+</div> \
+<div class=\"col-lg-6\"> \
+    <div class=\"ibox float-e-margins\"> \
+        <div class=\"ibox-title\"> \
+            <h5>{{title}} 订单增长率（单位：%）</h5> \
+        </div> \
+        <div class=\"ibox-content\"> \
+            <div> \
+                <div id=\"{{id}}-B\"></div> \
             </div> \
         </div> \
     </div> \
